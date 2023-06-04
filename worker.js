@@ -27,6 +27,10 @@ chrome.action.onClicked.addListener(async (tab) => {
         text: nextState,
     });
 
+    if (prevState == state.OFF) {
+        return;
+    }
+
     await chrome.scripting.insertCSS({
         files: ["cheating-mode.css"],
         target: { tabId: tab.id },
@@ -37,5 +41,4 @@ chrome.action.onClicked.addListener(async (tab) => {
         files: ["homework.js"],
     })
         .then(() => console.log("injected script file"));
-
 })

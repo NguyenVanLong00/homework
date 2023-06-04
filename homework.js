@@ -11,91 +11,111 @@ function working() {
     questions = document.querySelectorAll('p:has(+ * + .answer)')
     answers = document.querySelectorAll('.answer')
     nextpage = document.querySelector('#mod_quiz-next-nav')
-    submit = document.querySelector('input[value="Submit all and finish"]')
+    submit = document.querySelector('button[type="submit"] .btn .btn-primary')
 
 
     finishReview = document.querySelector('.mod_quiz-next-nav')
 
-    let quiz = getQuiz()
+    let quizData = getQuiz()
+    newQuiz = analyzeQuiz(questions, answers)
 
     submary = document.querySelector('.rui-summary-table');
-    if (submary) {
 
-        questions.forEach((question, index) => {
-            answer = answers[index]
+    processQuiz(quizData, newQuiz)
 
-            listAnswer = answer.querySelectorAll('div')
-
-            for (let index = 0; index < listAnswer.length; index++) {
-                const element = listAnswer[index];
-
-                isIncorrect = !!element.classList.contains('incorrect');
-
-                label = element.querySelector('label');
-                input = element.querySelector('input');
-
-                record = {
-                    question: question.textContent,
-                    answer: label.textContent,
-                    correct: true
-                };
-
-                for (let j = 0; j < quiz.length; j++) {
-                    item = quiz[index];
-                    if (item.question == record.question && item.answer == record.answer) {
-                        quiz[index].correct = !isIncorrect
-                        break;
-                    }
-                }
-            }
-        });
-
-        saveQuiz(quiz)
-
-        finishReview.click()
-    } else {
-        questions.forEach((question, index) => {
-            answer = answers[index]
-
-            listAnswer = answer.querySelectorAll('div')
-
-            listAnswer.forEach(element => {
-
-                label = element.querySelector('label');
-                input = element.querySelector('input');
-
-                record = {
-                    question: question.textContent,
-                    answer: label.textContent,
-                    correct: true
-                };
-
-                hasQuiz = quiz?.find(item => {
-                    return item.question == record.question && item.answer == record.answer
-                })
-
-                if (hasQuiz != undefined) {
-                    if (hasQuiz.correct) {
-                        input.click()
-                    }
-                } else {
-                    quiz.push(record)
-                    input.click()
-                }
-            });
-        });
-
-        saveQuiz(quiz)
-        if (nextpage) {
-            nextpage.click()
-        } else {
-            submit.click()
-        }
+    if (nextpage) {
+        nextpage.click()
     }
 }
 
+function processQuiz(quizData, newQuiz) {
+    for (let i = 0; i < newQuiz.length; i++) {
+        const quiz = newQuiz[i];
+
+        processed = false;
+        for (let j = 0; j < quizData.length; j++) {
+            const oldQuiz = quizData[j];
+
+            if (quiz.question == oldQuiz.question) {
+                processed = true
+
+
+                for (let k = 0; k < quiz.answers.length; k++) {
+                    const answer = quiz.answers[k];
+
+                    answerd = false
+                    for (let h = 0; h < oldQuiz.answers.length; h++) {
+                        const oldAnswer = oldQuiz.answers[h];
+
+                        if (answer.answer == oldAnswer.answer) {
+                            answerd = true
+
+                            if (oldAnswer.correct) {
+                                answer.input.click()
+                            }
+
+                            if (!answer.correct) {
+                                oldAnswer.correct = false;
+                            }
+                        }
+                    }
+
+                    if (!answerd) {
+                        oldQuiz.answers.push(answer)
+                        answer.input.click()
+                    }
+                }
+
+                break;
+            }
+        }
+
+        if (!processed) {
+            quizData.push(quiz)
+            quiz.answers[0].input.click()
+        }
+    }
+
+    saveQuiz(quizData)
+    console.log(quizData)
+}
+
+function recorrectQuiz(quizData, newQuiz) {
+    saveQuiz(newQuiz)
+}
+
+function analyzeQuiz(questions, answers) {
+    records = []
+    questions.forEach((question, index) => {
+        answer = answers[index]
+        record = {
+            question: question.textContent,
+            answers: []
+        }
+
+        listAnswer = answer.querySelectorAll('div')
+
+        listAnswer.forEach(element => {
+            label = element.querySelector('label');
+            input = element.querySelector('input');
+
+            incorrect = element.classList.contains('incorrect')
+
+            record.answers.push({
+                answer: label.textContent,
+                correct: !incorrect,
+                input: input
+            });
+        });
+
+        records.push(record)
+    });
+
+    return records
+}
+
 function getQuiz() {
-    return JSON.parse(localStorage.getItem(quiz.table))
+    return JSON.parse(localStorage.getItem(quiz.table)) ?? []
 }
 
 function saveQuiz(records) {

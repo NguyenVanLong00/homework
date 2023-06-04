@@ -21,7 +21,7 @@
   "content_scripts": [
     {
       "matches": ["https://elearning.thanglong.edu.vn/*"],
-      "js": ["main.js"]
+      "js": ["homework.js"]
     }
   ],
   "background": {
