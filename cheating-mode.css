@@ -1,0 +1,18 @@
+body {
+    background-color: rgba(31, 167, 230, 0.644) !important;
+}
+
+/* question 1*/
+p:has(+ * + .answer) {
+    background-color: red !important;
+}
+
+/* question 2 */
+p:has(+ .answer) {
+    background-color: red !important;
+}
+
+/* answer */
+.answer {
+    background-color: red !important;
+}
